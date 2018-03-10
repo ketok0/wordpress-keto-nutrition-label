@@ -376,10 +376,10 @@ function nutr_label_generate( $id, $width = 22 )
 	$macro= get_macros('protein', $protein, $calories)[macro];
 	$macropercent= get_macros('protein', $protein, $calories)[macropct];
 					
-		if ($macropercent<=17){
+		if ($macropercent<=19){
 				$colour="lightgreen";
 			}
-		elseif($macropercent>17 && $macropercent<25){
+		elseif($macropercent>19 && $macropercent<25){
 				$colour="yellow";
 			}
 		elseif($macropercent>=25){
