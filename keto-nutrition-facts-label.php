@@ -6,7 +6,7 @@ Description:  Easily add FDA-style nutrition labels to pages and posts, includin
 Text Domain: keto-nutrition-label
 Domain Path: /languages
 Author: ketokookin'
-Version: 1.2
+Version: 1.3
 Author URI: https://ketokookin.com
 
 Forked from: http://halgatewood.com/easy-nutrition-facts-label
@@ -63,7 +63,7 @@ $nutrional_fields = array(
  */
 function nutr_init()
 {
-	load_plugin_textdomain('wp-nutrition-label', false, 'wp-nutrition-label/languages/');
+	load_plugin_textdomain('keto-nutrition-label', false, 'keto-nutrition-label/languages/');
 
 	$labels = array(
 		'name' => __('Nutritional Labels'),
@@ -264,6 +264,29 @@ function nutr_percentage($contains, $reference)
 	return round( $contains / $reference * 100 );
 }
 
+//Getting Macronutrients for nutr_label_generate
+function get_macros($macrotype, $amount, $totalcalories){
+
+		if ($macrotype == 'fat'){
+		$macro = $amount*9;	
+		}
+		
+		elseif ($macrotype== 'protein'){
+		$macro = $amount*4;	
+		}
+		
+		elseif ($macrotype== 'sugars'){
+		$macro = $amount*4;
+		}
+		
+		elseif ($macrotype== 'fiber'){
+		$macro = $amount*2;
+		}
+	$macropercent = round(100/$totalcalories* $macro);
+	$macros=array('macro' => $macro, 'macropct' => $macropercent );
+
+	return $macros;
+}
 
 /*
  * @param array $args
@@ -283,6 +306,9 @@ function nutr_label_generate( $id, $width = 22 )
 		$$name = $label['_' . $name][0];	
 	}
 
+	//
+	//	
+	
 	// BUILD CALORIES IF WE DONT HAVE ANY
 	if($calories == 0) 
 	{
@@ -296,7 +322,7 @@ function nutr_label_generate( $id, $width = 22 )
 		$style = " style='width: " . $width . "em; font-size: " . ( ( $width / 22 ) * .75 ) . "em;'";
 	}
 	
-	$rtn = "";
+//	$rtn = "";
 	$rtn .= "<div class='wp-nutrition-label' id='wp-nutrition-label-$id' " . ($style ? $style : "") . ">\n";
 	
 	$rtn .= "	<div class='heading'>".__("Nutrition Facts")."</div>\n";
@@ -311,36 +337,93 @@ function nutr_label_generate( $id, $width = 22 )
 	$rtn .= "	<div class='amount-per small item_row noborder'>Amount Per Serving</div>\n";
 	
 
-
 	$rtn .= "	<div class='item_row cf'>\n";
 	$rtn .= "		<span class='f-left'><strong>" . __("Calories") . "</strong> " . $calories . "kcal</span>\n";
 	$rtn .= "	</div>\n";
 	
-	if($totalfat !=0){
+	/////////////////////////////////////////////////////////////////////////start fat test	
+	//
+	//
+	//
+	//get_macros($macrotype, $amount, $totalcalories)
+	//-->get_macros('protein', $protein, $calories)
+	//
+	//
+	//
+	{
+		
+	$macro= get_macros('fat', $totalfat, $calories)[macro];
+	$macropercent= get_macros('fat', $totalfat, $calories)[macropct];
+		if ($macropercent>=70){
+				$colour="lightgreen";
+			}
+		elseif($macropercent<70 && $macropercent>55){
+				$colour="yellow";
+			}
+		elseif($macropercent<=54){
+				$colour="#ff6666";
+			}	
+				$colourstyle = "style='background-color:" . $colour . ";'";	
+	
+		
 	$rtn .= "	<div class='indent item_row cf'>\n";
-	$rtn .= "		<span class='f-left'>from Fat " . ($totalfat * 9) . "kcal</span>\n";
-	$rtn .= "		<span class='f-right'>" . round(100/$calories* $totalfat*9) . "%</span>\n";
+	$rtn .= "		<span class='f-left'>from Fat " . $macro . "kcal</span>\n";
+	$rtn .= "		<span class='f-right' " . $colourstyle . ">" . $macropercent . "%</span>\n";
 	$rtn .= "	</div>\n";
 	}
 	
-	if($protein !=0){	
+	{	
+	$macro= get_macros('protein', $protein, $calories)[macro];
+	$macropercent= get_macros('protein', $protein, $calories)[macropct];
+					
+		if ($macropercent<=17){
+				$colour="lightgreen";
+			}
+		elseif($macropercent>17 && $macropercent<25){
+				$colour="yellow";
+			}
+		elseif($macropercent>=25){
+				$colour="#ff6666";
+			}
+				$colourstyle = "style='background-color:" . $colour . ";'";	
+	
 	$rtn .= "	<div class='indent item_row cf'>\n";
-	$rtn .= "		<span class='f-left'>from Protein " . ($protein * 4) . "kcal</span>\n";
-	$rtn .= "		<span class='f-right'>" . round(100/$calories* $protein*4) .  "%</span>\n";
+	$rtn .= "		<span class='f-left'>from Protein " . $macro . "kcal</span>\n";
+	$rtn .= "		<span class='f-right' " . $colourstyle . ">" . $macropercent . "%</span>\n";
 	$rtn .= "	</div>\n";
 	}
 	
-	if($sugars !=0){
+	// get sugars, even when 0
+	{
+	$macro= get_macros('sugars', $sugars, $calories)[macro];
+	$macropercent= get_macros('sugars', $sugars, $calories)[macropct];
+	//$color=nutr_colors('sugars');
+		
+		if ($macropercent<=9){
+				$colour="lightgreen";
+			}
+		elseif($macropercent>9 && $macropercent<15){
+				$colour="yellow";
+			}
+		elseif($macropercent>=15){
+				$colour="#ff6666";
+			}
+				$colourstyle = "style='background-color:" . $colour . ";'";	
+		
+		
+		
 	$rtn .= "	<div class='indent item_row cf'>\n";
-	$rtn .= "		<span class='f-left'>from net. Carb " . ($sugars * 4) . "kcal</span>\n";
-	$rtn .= "		<span class='f-right'>" . round(100/$calories* $sugars*4) . "%</span>\n";
+	$rtn .= "		<span class='f-left'>from net. Carb " . $macro . "kcal</span>\n";
+	$rtn .= "		<span class='f-right' " . $colourstyle . ">" . $macropercent . "%</span>\n";
 	$rtn .= "	</div>\n";
 	}
 	
 	if($fiber !=0){
+	$macro= get_macros('fiber', $fiber, $calories)[macro];
+	$macropercent= get_macros('fiber', $fiber, $calories)[macropct];
 	$rtn .= "	<div class='indent item_row cf'>\n";
-	$rtn .= "		<span class='f-left'>from Fiber " . ($fiber * 2) . "kcal</span>\n";
-	$rtn .= "		<span class='f-right'>" . round(100/$calories* $fiber*2) . "%</span>\n";
+	$rtn .= "		<span class='f-left'>from Fiber " . $macro . "kcal</span>\n";
+	$rtn .= "		<span class='f-right'>" . $macropercent . "%</span>\n";
 	$rtn .= "	</div>\n";
 	}
 	
@@ -380,7 +463,8 @@ function nutr_label_generate( $id, $width = 22 )
 	$rtn .= "	</div>\n";
 	}
 	
-	if($sugars !=0){
+	//show sugars, even when 0
+	{
 	$rtn .= "	<div class='item_row cf'>\n";
 	$rtn .= "		<span class='f-left'><strong>" . __("Carbohydrate (Netto)")." </strong>".$sugars . "g</span>\n";
 	$rtn .= "		<span class='f-right'>" . nutr_percentage($sugars, $rda['sugars']) . "%</span>\n";
@@ -396,7 +480,7 @@ function nutr_label_generate( $id, $width = 22 )
 	}
 	
 	
-	if($protein !=0){
+	{
 	$rtn .= "	<div class='item_row cf' style='text-align:justify;'>\n";
 	$rtn .= "		<span class='f-left'><strong>".__("Protein")."</strong> ".$protein."g</span>\n";
 	$rtn .= "		<span class='f-right'>".nutr_percentage($protein, $rda['protein'])."%</span>\n";

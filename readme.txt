@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: ketokookin
-Tags: food, nutrition, nutrition label, nutrition facts, macronutrients
+Tags: food, nutrition, nutrition label, nutrition facts, macronutrients, ketogenic, low carb
 Tested up to: 4.9
 Requires at least: 3.0
 Stable tag: 1
